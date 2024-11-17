@@ -1,0 +1,42 @@
+{{ define "tabs" }}
+<div class="border-b border-gray-200 bg-gray-50/50">
+    <nav class="flex -mb-px mx-auto" aria-label="Tabs">
+        <button @click="activeTab = 'basic'" 
+                :class="{'border-indigo-500 text-indigo-600 bg-white': activeTab === 'basic',
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'basic'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 flex flex-col items-center space-y-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span>Basic</span>
+        </button>
+        <button @click="activeTab = 'advanced'"
+                :class="{'border-indigo-500 text-indigo-600 bg-white': activeTab === 'advanced',
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'advanced'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 flex flex-col items-center space-y-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <span>Advanced</span>
+        </button>
+        <button @click="activeTab = 'batch'"
+                :class="{'border-indigo-500 text-indigo-600 bg-white': activeTab === 'batch',
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'batch'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 flex flex-col items-center space-y-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Batch</span>
+        </button>
+        <button @click="activeTab = 'presets'"
+                :class="{'border-indigo-500 text-indigo-600 bg-white': activeTab === 'presets',
+                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'presets'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 flex flex-col items-center space-y-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <span>Presets</span>
+        </button>
+    </nav>
+</div>
+{{ end }} 
