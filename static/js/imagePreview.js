@@ -1,18 +1,55 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const imageInput = document.getElementById("imageInput");
-  const previewDiv = document.getElementById("preview");
-  const uploadArea = document.getElementById("uploadArea");
-  const fileStatus = document.getElementById("fileStatus");
-  const fileName = document.getElementById("fileName");
-  const fileSize = document.getElementById("fileSize");
-  const uploadText = document.getElementById("uploadText");
+  const elements = {
+    imageInput: document.getElementById("imageInput"),
+    previewDiv: document.getElementById("preview"),
+    uploadArea: document.getElementById("uploadArea"),
+    fileStatus: document.getElementById("fileStatus"),
+    fileName: document.getElementById("fileName"),
+    fileSize: document.getElementById("fileSize"),
+    uploadText: document.getElementById("uploadText"),
+    widthInput: document.getElementById("widthInput"),
+    heightInput: document.getElementById("heightInput")
+  };
 
-  imageInput.addEventListener("change", function (e) {
-    const file = e.target.files[0];
-    if (file) {
-      handleFileSelect(file);
+  function initializeImagePreview() {
+    if (!elements.imageInput || !elements.uploadArea) {
+      console.error("Required preview elements not found");
+      return;
     }
-  });
+
+    setupEventListeners();
+  }
+
+  function setupEventListeners() {
+    elements.imageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) handleFileSelect(file);
+    });
+
+    setupDragAndDrop();
+  }
+
+  function setupDragAndDrop() {
+    elements.uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      elements.uploadArea.classList.add("border-indigo-500");
+    });
+
+    elements.uploadArea.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      elements.uploadArea.classList.remove("border-indigo-500");
+    });
+
+    elements.uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      elements.uploadArea.classList.remove("border-indigo-500");
+
+      if (e.dataTransfer.files.length) {
+        elements.imageInput.files = e.dataTransfer.files;
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   function handleFileSelect(file) {
     if (!file.type.startsWith("image/")) {
@@ -20,54 +57,50 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Show and update file status
-    fileStatus.classList.remove("hidden");
-    fileStatus.classList.add("bg-green-50");
-    fileName.textContent = file.name;
-    fileSize.textContent = ` (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+    updateFileStatus(file);
+    previewImage(file);
+  }
 
+  function updateFileStatus(file) {
+    if (!elements.fileStatus) return;
+
+    elements.fileStatus.classList.remove("hidden");
+    elements.fileStatus.classList.add("bg-green-50");
+    elements.fileName.textContent = file.name;
+    elements.fileSize.textContent = ` (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+  }
+
+  function previewImage(file) {
     const reader = new FileReader();
-    reader.onload = function (e) {
-      // Show preview
-      previewDiv.classList.remove("hidden");
-      const img = previewDiv.querySelector("img");
+    reader.onload = (e) => {
+      if (!elements.previewDiv) return;
+
+      elements.previewDiv.classList.remove("hidden");
+      const img = elements.previewDiv.querySelector("img");
+      if (!img) return;
+
       img.src = e.target.result;
-
-      // Show image dimensions when loaded
-      img.onload = function () {
-        const dimensions = `${img.naturalWidth} × ${img.naturalHeight}px`;
-        previewDiv.querySelector(".image-dimensions").textContent = dimensions;
-
-        // Indicate that the file is ready for processing
-        uploadArea.classList.add("border-green-500"); // Change border color
-        uploadText.innerHTML = `<span class="text-green-500">File ready for processing</span>`;
-
-        const widthInput = document.getElementById("widthInput");
-        const heightInput = document.getElementById("heightInput");
-        if (widthInput) widthInput.placeholder = img.naturalWidth;
-        if (heightInput) heightInput.placeholder = img.naturalHeight;
-      };
+      img.onload = () => updateImageInfo(img);
     };
     reader.readAsDataURL(file);
   }
 
-  uploadArea.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    this.classList.add("border-indigo-500");
-  });
-
-  uploadArea.addEventListener("dragleave", function (e) {
-    e.preventDefault();
-    this.classList.remove("border-indigo-500");
-  });
-
-  uploadArea.addEventListener("drop", function (e) {
-    e.preventDefault();
-    this.classList.remove("border-indigo-500");
-
-    if (e.dataTransfer.files.length) {
-      imageInput.files = e.dataTransfer.files;
-      handleFileSelect(e.dataTransfer.files[0]);
+  function updateImageInfo(img) {
+    const dimensions = `${img.naturalWidth} × ${img.naturalHeight}px`;
+    const dimensionsElement = elements.previewDiv.querySelector(".image-dimensions");
+    if (dimensionsElement) {
+      dimensionsElement.textContent = dimensions;
     }
-  });
+
+    elements.uploadArea.classList.add("border-green-500");
+    if (elements.uploadText) {
+      elements.uploadText.innerHTML = '<span class="text-green-500">File ready for processing</span>';
+    }
+
+    // Update dimension inputs with placeholders
+    if (elements.widthInput) elements.widthInput.placeholder = img.naturalWidth;
+    if (elements.heightInput) elements.heightInput.placeholder = img.naturalHeight;
+  }
+
+  initializeImagePreview();
 });

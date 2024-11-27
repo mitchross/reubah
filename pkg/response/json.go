@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -12,7 +13,10 @@ type Response struct {
 }
 
 // Common content type header
-const jsonContentType = "application/json; charset=utf-8"
+const (
+	jsonContentType = "application/json; charset=utf-8"
+	maxAge = 31536000 // 1 year in seconds
+)
 
 // JSON sends a success response with data efficiently
 func JSON(w http.ResponseWriter, code int, data interface{}) {
@@ -30,21 +34,10 @@ func JSON(w http.ResponseWriter, code int, data interface{}) {
 		Data:    data,
 	}
 
-	// If encoding fails, log it but don't panic
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, `{"success":false,"error":"Internal Server Error"}`, http.StatusInternalServerError)
 		return
 	}
-}
-
-// Stream sends a streaming response for large data sets
-func Stream(w http.ResponseWriter, code int) *json.Encoder {
-	h := w.Header()
-	h.Set("Content-Type", jsonContentType)
-	h.Set("X-Content-Type-Options", "nosniff")
-	h.Set("Transfer-Encoding", "chunked")
-	w.WriteHeader(code)
-	return json.NewEncoder(w)
 }
 
 // File sends a file download response
@@ -52,7 +45,8 @@ func File(w http.ResponseWriter, filename string, contentType string) {
 	h := w.Header()
 	h.Set("Content-Type", contentType)
 	h.Set("Content-Disposition", "attachment; filename="+filename)
-	h.Set("Cache-Control", "max-age=31536000") // Cache for 1 year
+	h.Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+	h.Set("X-Content-Type-Options", "nosniff")
 }
 
 // NoContent sends a 204 No Content response

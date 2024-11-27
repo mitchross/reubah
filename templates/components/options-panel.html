@@ -8,8 +8,10 @@
                 <option value="jpeg">JPEG - Best for photos</option>
                 <option value="png">PNG - Best for graphics</option>
                 <option value="webp">WebP - Modern web format</option>
-                <option value="gif">GIF - Animated images</option>
+                <option value="gif">GIF - Simple animations</option>
+                <option value="bmp">BMP - Basic format</option>
             </select>
+            <p class="mt-1 text-xs text-gray-500">Choose the output format for your image</p>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Quality Level</label>
@@ -17,49 +19,78 @@
                 <option value="lossless">Lossless - Perfect quality</option>
                 <option value="high">High - 90% quality</option>
                 <option value="medium" selected>Medium - 75% quality</option>
-                <option value="low">Low - 50% quality</option>
+                <option value="low">Low - 60% quality</option>
             </select>
+            <p class="mt-1 text-xs text-gray-500">Higher quality means larger file size</p>
         </div>
     </div>
 
-    <!-- Dimensions -->
+    <!-- Dimensions with resize mode -->
     <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Resize Image</label>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="relative">
-                <input type="number" id="widthInput" name="width" min="1" max="8192" 
+                <input type="number" 
+                       id="widthInput" 
+                       name="width" 
+                       min="1" 
+                       max="8192" 
                        placeholder="Width (px)"
                        class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 mt-1">
-                    px
-                </span>
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 mt-1">px</span>
             </div>
             <div class="relative">
-                <input type="number" id="heightInput" name="height" min="1" max="8192" 
+                <input type="number" 
+                       id="heightInput" 
+                       name="height" 
+                       min="1" 
+                       max="8192" 
                        placeholder="Height (px)"
                        class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 mt-1">
-                    px
-                </span>
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 mt-1">px</span>
             </div>
         </div>
-        <p class="mt-1 text-sm text-gray-500">Leave empty to maintain aspect ratio</p>
+        <div class="mt-2">
+            <select id="resizeModeSelect" name="resizeMode" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
+                <option value="fit" selected>Fit - Maintain aspect ratio</option>
+                <option value="fill">Fill - Crop to fit</option>
+                <option value="stretch">Stretch - Exact dimensions</option>
+            </select>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">Leave empty to maintain original dimensions</p>
     </div>
 
-    <!-- Background Removal Section -->
+    <!-- Optimization -->
     <div class="border-t pt-4">
         <div class="flex items-center justify-between">
             <div>
-                <label class="block text-sm font-medium text-gray-700">
+                <label for="optimize" class="block text-sm font-medium text-gray-700">
+                    Optimize Image
+                </label>
+                <p class="text-xs text-gray-500">Reduce file size while maintaining quality</p>
+            </div>
+            <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                <input type="checkbox" 
+                       id="optimize" 
+                       name="optimize" 
+                       class="form-checkbox h-5 w-5 text-indigo-600 transition-colors duration-200 ease-in-out rounded border-gray-300 focus:ring-indigo-500">
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Removal -->
+    <div class="border-t pt-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <label for="removeBackground" class="block text-sm font-medium text-gray-700">
                     Remove Background
                 </label>
-                <p class="text-sm text-gray-500">Automatically remove image background</p>
             </div>
-            <div class="relative">
+            <div class="relative inline-block w-10 mr-2 align-middle select-none">
                 <input type="checkbox" 
                        id="removeBackground" 
                        name="removeBackground" 
-                       class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                       class="form-checkbox h-5 w-5 text-indigo-600 transition-colors duration-200 ease-in-out rounded border-gray-300 focus:ring-indigo-500">
             </div>
         </div>
     </div>

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/dendianugerah/reubah/internal/constants"
+	"github.com/dendianugerah/reubah/pkg/errors"
 )
 
 // ResizeMode defines how the image should be resized
@@ -48,13 +50,24 @@ type ResizeOptions struct {
 
 // Resize resizes the image according to the specified options
 func Resize(img image.Image, opts ResizeOptions) (image.Image, error) {
-	if opts.Width == 0 && opts.Height == 0 {
-		return img, nil // No resize needed
+	// Validate input
+	if img == nil {
+		return nil, errors.New(errors.ErrInvalidFormat, "input image is nil", nil)
 	}
 
 	bounds := img.Bounds()
 	origWidth := bounds.Dx()
 	origHeight := bounds.Dy()
+
+	// Validate dimensions
+	if err := validateDimensions(opts.Width, opts.Height, origWidth, origHeight); err != nil {
+		return nil, err
+	}
+
+	// If no resize needed, return original
+	if opts.Width == 0 && opts.Height == 0 {
+		return img, nil
+	}
 
 	switch opts.Mode {
 	case ModeAspectFit:
@@ -62,10 +75,32 @@ func Resize(img image.Image, opts ResizeOptions) (image.Image, error) {
 	case ModeFill:
 		return fill(img, opts, origWidth, origHeight)
 	case ModeStretch:
-		return imaging.Resize(img, opts.Width, opts.Height, opts.Filter), nil
+		return imaging.Resize(img, opts.Width, opts.Height, imaging.Lanczos), nil
 	default:
-		return nil, fmt.Errorf("unsupported resize mode: %d", opts.Mode)
+		return nil, errors.New(errors.ErrInvalidFormat, fmt.Sprintf("unsupported resize mode: %d", opts.Mode), nil)
 	}
+}
+
+func validateDimensions(width, height, _, _ int) error {
+	// Check maximum dimensions
+	if width > constants.MaxImageWidth || height > constants.MaxImageHeight {
+		return errors.New(
+			errors.ErrInvalidSize,
+			fmt.Sprintf("dimensions exceed maximum allowed size (%dx%d)", constants.MaxImageWidth, constants.MaxImageHeight),
+			nil,
+		)
+	}
+
+	// Check for zero dimensions
+	if (width < 0) || (height < 0) {
+		return errors.New(
+			errors.ErrInvalidSize,
+			"dimensions cannot be negative",
+			nil,
+		)
+	}
+
+	return nil
 }
 
 func aspectFit(img image.Image, opts ResizeOptions, origWidth, origHeight int) (image.Image, error) {
@@ -87,7 +122,7 @@ func aspectFit(img image.Image, opts ResizeOptions, origWidth, origHeight int) (
 		}
 	}
 
-	return imaging.Resize(img, opts.Width, opts.Height, opts.Filter), nil
+	return imaging.Resize(img, opts.Width, opts.Height, imaging.Lanczos), nil
 }
 
 func fill(img image.Image, opts ResizeOptions, origWidth, origHeight int) (image.Image, error) {
@@ -103,7 +138,7 @@ func fill(img image.Image, opts ResizeOptions, origWidth, origHeight int) (image
 	resizedWidth := int(float64(origWidth) * ratio)
 	resizedHeight := int(float64(origHeight) * ratio)
 	
-	resized := imaging.Resize(img, resizedWidth, resizedHeight, opts.Filter)
+	resized := imaging.Resize(img, resizedWidth, resizedHeight, imaging.Lanczos)
 	
 	// Then crop to exact dimensions
 	return imaging.CropCenter(resized, opts.Width, opts.Height), nil

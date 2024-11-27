@@ -11,10 +11,13 @@ type ErrorCode string
 
 // Error codes
 const (
-	ErrInvalidFormat    ErrorCode = "INVALID_FORMAT"
-	ErrInvalidSize      ErrorCode = "INVALID_SIZE"
-	ErrProcessingFailed ErrorCode = "PROCESSING_FAILED"
-	ErrInvalidMIME      ErrorCode = "INVALID_MIME"
+	ErrInvalidFormat     ErrorCode = "INVALID_FORMAT"
+	ErrInvalidSize       ErrorCode = "INVALID_SIZE"
+	ErrProcessingFailed  ErrorCode = "PROCESSING_FAILED"
+	ErrInvalidMIME       ErrorCode = "INVALID_MIME"
+	ErrOptimizationFailed ErrorCode = "OPTIMIZATION_FAILED"
+	ErrResizeFailed      ErrorCode = "RESIZE_FAILED"
+	ErrBackgroundRemoval ErrorCode = "BACKGROUND_REMOVAL_FAILED"
 )
 
 // AppError represents an application error
@@ -47,16 +50,6 @@ type Response struct {
 	Error   *AppError   `json:"error,omitempty"`
 }
 
-// JSON sends a success response
-func JSON(w http.ResponseWriter, code int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(Response{
-		Success: code >= 200 && code < 300,
-		Data:    data,
-	})
-}
-
 // SendError sends an error response
 func SendError(w http.ResponseWriter, err error) {
 	var appErr *AppError
@@ -79,7 +72,7 @@ func getHTTPCode(code ErrorCode) int {
 	switch code {
 	case ErrInvalidFormat, ErrInvalidMIME, ErrInvalidSize:
 		return http.StatusBadRequest
-	case ErrProcessingFailed:
+	case ErrProcessingFailed, ErrOptimizationFailed, ErrResizeFailed, ErrBackgroundRemoval:
 		return http.StatusUnprocessableEntity
 	default:
 		return http.StatusInternalServerError

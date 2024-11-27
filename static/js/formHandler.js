@@ -1,152 +1,169 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // First verify all required elements exist
-  const form = document.getElementById("uploadForm");
-  if (!form) {
-    console.error("Upload form not found");
+  const elements = {
+    form: document.getElementById("uploadForm"),
+    progress: document.getElementById("progress"),
+    result: document.getElementById("result"),
+    formatSelect: document.getElementById("formatSelect"),
+    qualitySelect: document.getElementById("qualitySelect"),
+    widthInput: document.getElementById("widthInput"),
+    heightInput: document.getElementById("heightInput"),
+    removeBackground: document.getElementById("removeBackground"),
+    bgRemovalOptions: document.getElementById("bgRemovalOptions"),
+    resizeModeSelect: document.getElementById("resizeModeSelect"),
+    optimize: document.getElementById("optimize")
+  };
+
+  // Validate required elements
+  if (!elements.form || !elements.form.querySelector('input[type="file"]')) {
+    console.error("Required form elements not found");
     return;
   }
 
-  const progress = document.getElementById("progress");
-  const result = document.getElementById("result");
-  const formatSelect = document.getElementById("formatSelect");
-  const qualitySelect = document.getElementById("qualitySelect");
-  const widthInput = document.getElementById("widthInput");
-  const heightInput = document.getElementById("heightInput");
-  const fileInput = form.querySelector('input[type="file"]');
+  const fileInput = elements.form.querySelector('input[type="file"]');
+  const MAX_FILE_SIZE = 32 * 1024 * 1024; // 32MB
 
-  if (!fileInput) {
-    console.error("File input not found");
-    return;
-  }
-
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-  // Quick action handlers
-  document.querySelectorAll("[data-action]").forEach((button) => {
-    button.addEventListener("click", function (e) {
-      e.preventDefault();
-      const action = this.dataset.action;
-      handleQuickAction(action);
-
-      // Visual feedback
-      document.querySelectorAll("[data-action]").forEach((btn) => {
-        btn.classList.remove(
-          "bg-indigo-50",
-          "border-indigo-500",
-          "text-indigo-700"
-        );
-      });
-      this.classList.add(
-        "bg-indigo-50",
-        "border-indigo-500",
-        "text-indigo-700"
-      );
-    });
-  });
-
-  // Add background removal handling
-  const removeBackgroundCheckbox = document.getElementById("removeBackground");
-  const bgRemovalOptions = document.getElementById("bgRemovalOptions");
-
-  if (removeBackgroundCheckbox) {
-    removeBackgroundCheckbox.addEventListener("change", function() {
-      if (bgRemovalOptions) {
-        bgRemovalOptions.classList.toggle("hidden", !this.checked);
+  // Setup quick actions
+  setupQuickActions();
+  
+  // Setup background removal toggle
+  if (elements.removeBackground) {
+    elements.removeBackground.addEventListener("change", () => {
+      if (elements.bgRemovalOptions) {
+        elements.bgRemovalOptions.classList.toggle("hidden", !elements.removeBackground.checked);
       }
     });
   }
 
-  form.addEventListener("submit", async function (e) {
+  // Handle form submission
+  elements.form.addEventListener("submit", handleFormSubmit);
+
+  function setupQuickActions() {
+    const actions = {
+      optimize: () => {
+        elements.formatSelect.value = "webp";
+        elements.qualitySelect.value = "medium";
+        elements.widthInput.value = "";
+        elements.heightInput.value = "";
+      },
+      resize: () => {
+        elements.widthInput.focus();
+      },
+      adjust: () => {
+        elements.formatSelect.value = "png";
+        elements.qualitySelect.value = "lossless";
+      },
+      convert: () => elements.formatSelect.focus()
+    };
+
+    document.querySelectorAll("[data-action]").forEach(button => {
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        const action = button.dataset.action;
+        if (actions[action]) {
+          actions[action]();
+          updateQuickActionStyles(button);
+        }
+      });
+    });
+  }
+
+  async function handleFormSubmit(e) {
     e.preventDefault();
 
-    // Check if file is selected
+    if (!validateFile()) return;
+
+    const formData = createFormData();
+    
+    try {
+      await processImage(formData);
+    } catch (error) {
+      console.error("Error:", error);
+      showError(error.message);
+    }
+  }
+
+  function validateFile() {
     if (!fileInput.files || !fileInput.files.length) {
       showError("Please select an image file first");
-      return;
+      return false;
     }
 
     const file = fileInput.files[0];
     if (file.size > MAX_FILE_SIZE) {
-      showError("File size exceeds 10MB limit");
-      return;
+      showError("File size exceeds 32MB limit");
+      return false;
     }
 
-    // Create FormData and explicitly append the file
+    return true;
+  }
+
+  function createFormData() {
     const formData = new FormData();
-    formData.append("image", file); // Make sure we use "image" as the field name
-
-    // Add other form fields
-    const format = formatSelect ? formatSelect.value : "jpeg";
-    formData.append("format", format);
-
-    if (qualitySelect) {
-      formData.append("quality", qualitySelect.value);
+    formData.append("image", fileInput.files[0]);
+    
+    // Add processing options
+    if (elements.formatSelect) {
+      formData.append("format", elements.formatSelect.value || "jpeg");
     }
-    if (widthInput && widthInput.value) {
-      formData.append("width", widthInput.value);
+    if (elements.qualitySelect) {
+      formData.append("quality", elements.qualitySelect.value);
     }
-    if (heightInput && heightInput.value) {
-      formData.append("height", heightInput.value);
+    if (elements.widthInput?.value) {
+      formData.append("width", elements.widthInput.value);
     }
-
-    // Add background removal options
-    if (removeBackgroundCheckbox && removeBackgroundCheckbox.checked) {
+    if (elements.heightInput?.value) {
+      formData.append("height", elements.heightInput.value);
+    }
+    if (elements.resizeModeSelect) {
+      formData.append("resizeMode", elements.resizeModeSelect.value || "fit");
+    }
+    if (elements.removeBackground?.checked) {
       formData.append("removeBackground", "true");
     }
+    if (elements.optimize?.checked) {
+      formData.append("optimize", "true");
+    }
 
-    // Debug log
-    console.log("File being sent:", file);
-    console.log("Format being sent:", format);
-    
+    return formData;
+  }
+
+  async function processImage(formData) {
+    showProgress();
+    const submitButton = elements.form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+
     try {
-      showProgress();
-      const submitButton = this.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = true;
-      }
-
       const response = await fetch("/process", {
         method: "POST",
-        body: formData,
-        // Don't set Content-Type header - let the browser set it with the boundary
+        body: formData
       });
 
       if (!response.ok) {
-        let errorMessage = "Processing failed";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error?.message || errorMessage;
-        } catch (e) {
-          console.error("Error parsing error response:", e);
-        }
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Processing failed");
       }
 
-      await handleSuccess(response, format);
+      await handleSuccess(response, elements.formatSelect?.value || "jpeg");
     } catch (error) {
-      console.error("Error:", error);
-      showError(error.message);
+      showError(error.message || "Failed to process image");
     } finally {
       hideProgress();
-      const submitButton = this.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = false;
-      }
+      if (submitButton) submitButton.disabled = false;
     }
-  });
+  }
 
   function showProgress() {
-    if (progress) {
-      progress.style.display = "block";
+    if (elements.progress) {
+      elements.progress.style.display = "block";
     }
-    if (result) {
-      result.style.display = "none";
+    if (elements.result) {
+      elements.result.style.display = "none";
     }
   }
 
   function hideProgress() {
-    if (progress) {
-      progress.style.display = "none";
+    if (elements.progress) {
+      elements.progress.style.display = "none";
     }
   }
 
@@ -165,12 +182,12 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       </div>
     `;
-    form.insertBefore(errorDiv, form.firstChild);
+    elements.form.insertBefore(errorDiv, elements.form.firstChild);
     setTimeout(() => errorDiv.remove(), 5000);
   }
 
   async function handleSuccess(response, format) {
-    if (!result) {
+    if (!elements.result) {
       console.error("Result element not found");
       return;
     }
@@ -178,8 +195,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
 
-    const resultPreview = result.querySelector(".result-preview");
-    const resultInfo = result.querySelector(".result-info");
+    const resultPreview = elements.result.querySelector(".result-preview");
+    const resultInfo = elements.result.querySelector(".result-info");
 
     if (resultPreview && resultInfo) {
       resultPreview.innerHTML = `<img src="${url}" alt="Processed image" class="max-w-full rounded-lg">`;
@@ -195,30 +212,21 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
     }
 
-    result.style.display = "block";
+    elements.result.style.display = "block";
   }
 
-  function handleQuickAction(action) {
-    switch (action) {
-      case "optimize":
-        if (formatSelect) formatSelect.value = "webp";
-        if (qualitySelect) qualitySelect.value = "medium";
-        if (widthInput) widthInput.value = "";
-        if (heightInput) heightInput.value = "";
-        break;
-
-      case "resize":
-        if (widthInput) widthInput.focus();
-        break;
-
-      case "adjust":
-        if (formatSelect) formatSelect.value = "png";
-        if (qualitySelect) qualitySelect.value = "lossless";
-        break;
-
-      case "convert":
-        if (formatSelect) formatSelect.focus();
-        break;
-    }
+  function updateQuickActionStyles(button) {
+    document.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.classList.remove(
+        "bg-indigo-50",
+        "border-indigo-500",
+        "text-indigo-700"
+      );
+    });
+    button.classList.add(
+      "bg-indigo-50",
+      "border-indigo-500",
+      "text-indigo-700"
+    );
   }
 });

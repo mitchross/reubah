@@ -14,136 +14,132 @@ import (
 	"github.com/dendianugerah/reubah/internal/processor/resize"
 	"github.com/dendianugerah/reubah/internal/validator"
 	"github.com/dendianugerah/reubah/pkg/errors"
+	"github.com/dendianugerah/reubah/internal/constants"
 )
 
 func ProcessImage(w http.ResponseWriter, r *http.Request) {
-	// Add debug logging
-	log.Printf("Starting image processing request")
-
-	// Log the content type of the request
-	log.Printf("Request Content-Type: %s", r.Header.Get("Content-Type"))
-
-	// Parse multipart form with increased size limit
-	err := r.ParseMultipartForm(32 << 20)
-	if err != nil { // 32MB limit
-		log.Printf("Error parsing multipart form: %v", err)
+	if err := r.ParseMultipartForm(constants.MaxFileSize); err != nil {
 		errors.SendError(w, errors.New(errors.ErrInvalidFormat, "Unable to parse form", err))
 		return
 	}
 
-	// Log form values
-	log.Printf("Form values: %+v", r.Form)
-	log.Printf("File headers: %+v", r.MultipartForm.File)
-
-	// Get the uploaded file
-	file, header, err := r.FormFile("image")
+	opts, img, err := parseRequest(r)
 	if err != nil {
-		log.Printf("Error getting form file: %v", err)
-		errors.SendError(w, errors.New(errors.ErrInvalidFormat, "No file uploaded", err))
+		errors.SendError(w, err)
 		return
+	}
+
+	processedImage, err := processImage(img, opts)
+	if err != nil {
+		errors.SendError(w, err)
+		return
+	}
+
+	sendResponse(w, processedImage, opts.OutputFormat)
+}
+
+func parseRequest(r *http.Request) (processor.ProcessOptions, image.Image, error) {
+	img, err := getAndValidateImage(r)
+	if err != nil {
+		return processor.ProcessOptions{}, nil, err
+	}
+
+	opts, err := parseOptions(r)
+	if err != nil {
+		return processor.ProcessOptions{}, nil, err
+	}
+
+	return opts, img, nil
+}
+
+func getAndValidateImage(r *http.Request) (image.Image, error) {
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		return nil, errors.New(errors.ErrInvalidFormat, "No file uploaded", err)
 	}
 	defer file.Close()
 
-	// Log file details
-	log.Printf("Successfully received file: %s, size: %d, content-type: %s",
-		header.Filename,
-		header.Size,
-		header.Header.Get("Content-Type"))
-
-	// Validate MIME type
 	if err := validator.ValidateMIMEType(file); err != nil {
-		log.Printf("MIME type validation failed: %v", err)
-		errors.SendError(w, errors.New(errors.ErrInvalidMIME, "Invalid file type", err))
-		return
+		return nil, errors.New(errors.ErrInvalidMIME, "Invalid file type", err)
 	}
 
-	// Decode the image
 	img, _, err := image.Decode(file)
 	if err != nil {
-		errors.SendError(w, errors.New(errors.ErrInvalidFormat, "Invalid image file", err))
-		return
+		return nil, errors.New(errors.ErrInvalidFormat, "Invalid image file", err)
 	}
 
-	// Get processing options from form
+	return img, nil
+}
+
+func parseOptions(r *http.Request) (processor.ProcessOptions, error) {
+	width, err := parseDimension(r.FormValue("width"))
+	if err != nil {
+		return processor.ProcessOptions{}, errors.New(errors.ErrInvalidFormat, "Invalid width value", err)
+	}
+
+	height, err := parseDimension(r.FormValue("height"))
+	if err != nil {
+		return processor.ProcessOptions{}, errors.New(errors.ErrInvalidFormat, "Invalid height value", err)
+	}
+
 	format := r.FormValue("format")
 	if format == "" {
-		format = "jpeg" // Default format
+		format = constants.DefaultFormat
 	}
 
-	// Parse dimensions
-	width := 0
-	height := 0
-	if widthStr := r.FormValue("width"); widthStr != "" {
-		width, err = strconv.Atoi(widthStr)
-		if err != nil {
-			errors.SendError(w, errors.New(errors.ErrInvalidFormat, "Invalid width value", err))
-			return
-		}
-	}
-
-	if heightStr := r.FormValue("height"); heightStr != "" {
-		height, err = strconv.Atoi(heightStr)
-		if err != nil {
-			errors.SendError(w, errors.New(errors.ErrInvalidFormat, "Invalid height value", err))
-			return
-		}
-	}
-
-	// Get resize mode
 	resizeMode := r.FormValue("resizeMode")
 	if resizeMode == "" {
-		resizeMode = "fit"
+		resizeMode = constants.DefaultResizeMode
 	}
 
-	// Parse resize mode
 	parsedResizeMode, err := resize.ParseResizeMode(resizeMode)
 	if err != nil {
-		errors.SendError(w, errors.New(errors.ErrInvalidFormat, "Invalid resize mode", err))
-		return
+		return processor.ProcessOptions{}, errors.New(errors.ErrInvalidFormat, "Invalid resize mode", err)
 	}
 
-	// Parse quality
-	qualityValue := 85 // default quality
-	if quality := r.FormValue("quality"); quality != "" {
-		switch quality {
-		case "low":
-			qualityValue = 60
-		case "medium":
-			qualityValue = 75
-		case "high":
-			qualityValue = 90
-		case "lossless":
-			qualityValue = 100
-		}
-	}
-
-	// Create processing options
-	opts := processor.ProcessOptions{
+	return processor.ProcessOptions{
 		Width:            width,
 		Height:           height,
 		ResizeMode:       parsedResizeMode,
 		OutputFormat:     format,
-		Quality:          qualityValue,
-		Optimize:         r.FormValue("optimize") == "true",
+		Quality:          parseQuality(r.FormValue("quality")),
 		RemoveBackground: r.FormValue("removeBackground") == "true",
-	}
+		OptimizeImage:    r.FormValue("optimize") == "true",
+	}, nil
+}
 
-	// Process the image
+func processImage(img image.Image, opts processor.ProcessOptions) (*processor.ProcessedImage, error) {
 	proc := processor.NewImageProcessor()
-	processedImage, err := proc.ProcessImageData(img, opts)
-	if err != nil {
-		log.Printf("Processing error: %v", err)
-		errors.SendError(w, errors.New(errors.ErrProcessingFailed, "Failed to process image", err))
-		return
-	}
+	return proc.ProcessImageData(img, opts)
+}
 
-	// Set response headers
+func sendResponse(w http.ResponseWriter, img *processor.ProcessedImage, format string) {
 	w.Header().Set("Content-Type", fmt.Sprintf("image/%s", format))
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=processed.%s", format))
 
-	// Write the processed image directly to the response
-	if err := processedImage.Write(w); err != nil {
+	if err := img.Write(w); err != nil {
 		log.Printf("Error writing response: %v", err)
-		return
+	}
+}
+
+func parseDimension(value string) (int, error) {
+	if value == "" {
+		return 0, nil
+	}
+	return strconv.Atoi(value)
+}
+
+func parseQuality(quality string) int {
+	switch quality {
+	case "low":
+		return 60
+	case "medium":
+		return 75
+	case "high":
+		return 90
+	case "lossless":
+		return 100
+	default:
+		return constants.DefaultQuality // default quality
 	}
 }

@@ -1,20 +1,15 @@
 package validator
 
 import (
+	"github.com/dendianugerah/reubah/internal/constants"
 	"github.com/dendianugerah/reubah/pkg/errors"
 )
 
-const (
-	MaxFileSize    = 10 << 20 // 10 MB
-	MaxImageWidth  = 8192
-	MaxImageHeight = 8192
-)
-
 func ValidateFileSize(size int64) error {
-	if size > MaxFileSize {
+	if size > constants.MaxFileSize {
 		return errors.New(
 			errors.ErrInvalidSize,
-			"File size exceeds maximum allowed size (10MB)",
+			"File size exceeds maximum allowed size (32MB)",
 			nil,
 		)
 	}
@@ -22,7 +17,7 @@ func ValidateFileSize(size int64) error {
 }
 
 func ValidateImageDimensions(width, height int) error {
-	if width > MaxImageWidth || height > MaxImageHeight {
+	if width > constants.MaxImageWidth || height > constants.MaxImageHeight {
 		return errors.New(
 			errors.ErrInvalidSize,
 			"Image dimensions exceed maximum allowed size (8192x8192)",
