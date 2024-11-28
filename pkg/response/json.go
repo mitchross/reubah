@@ -2,7 +2,7 @@ package response
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"net/http"
 )
 
@@ -41,13 +41,13 @@ func JSON(w http.ResponseWriter, code int, data interface{}) {
 }
 
 // File sends a file download response
-func File(w http.ResponseWriter, filename string, contentType string) {
-	h := w.Header()
-	h.Set("Content-Type", contentType)
-	h.Set("Content-Disposition", "attachment; filename="+filename)
-	h.Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
-	h.Set("X-Content-Type-Options", "nosniff")
-}
+// func File(w http.ResponseWriter, filename string, contentType string) {
+// 	h := w.Header()
+// 	h.Set("Content-Type", contentType)
+// 	h.Set("Content-Disposition", "attachment; filename="+filename)
+// 	h.Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+// 	h.Set("X-Content-Type-Options", "nosniff")
+// }
 
 // NoContent sends a 204 No Content response
 func NoContent(w http.ResponseWriter) {

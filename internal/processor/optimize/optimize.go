@@ -118,14 +118,13 @@ func optimizePNG(w io.Writer, img image.Image, opts OptimizeOptions) error {
 }
 
 func optimizeWebP(w io.Writer, img image.Image, opts OptimizeOptions) error {
-	// Implementation depends on your WebP library
 	return errors.New(errors.ErrOptimizationFailed, "WebP optimization not implemented", nil)
 }
 
 // autoAdjustQuality analyzes image content and adjusts quality settings
 func autoAdjustQuality(img image.Image, opts OptimizeOptions) OptimizeOptions {
 	complexity := calculateImageComplexity(img)
-	
+
 	if complexity < 0.3 {
 		opts.Quality = 70 // Simple images
 	} else if complexity < 0.6 {
@@ -142,7 +141,7 @@ func calculateImageComplexity(img image.Image) float64 {
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
-	
+
 	if width == 0 || height == 0 {
 		return 0
 	}
@@ -156,13 +155,13 @@ func calculateImageComplexity(img image.Image) float64 {
 		for j := 0; j < sampleSize; j++ {
 			y := (j * height) / sampleSize
 			currentColor := img.At(x, y)
-			
+
 			r1, g1, b1, _ := lastColor.RGBA()
 			r2, g2, b2, _ := currentColor.RGBA()
-			
+
 			diff := abs(int(r1)-int(r2)) + abs(int(g1)-int(g2)) + abs(int(b1)-int(b2))
 			variance += float64(diff) / float64(0xffff*3)
-			
+
 			lastColor = currentColor
 		}
 	}
@@ -175,4 +174,4 @@ func abs(x int) int {
 		return -x
 	}
 	return x
-} 
+}
