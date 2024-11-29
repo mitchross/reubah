@@ -8,4 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 )
 
-require golang.org/x/image v0.15.0 // indirect
+require (
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
+	golang.org/x/image v0.15.0 // indirect
+)

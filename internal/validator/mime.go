@@ -14,6 +14,7 @@ var allowedMIMETypes = map[string]bool{
 	"image/webp": true,
 	"image/gif":  true,
 	"image/bmp":  true,
+	"application/pdf": true,
 }
 
 func ValidateMIMEType(file multipart.File) error {

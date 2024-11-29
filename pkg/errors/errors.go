@@ -18,6 +18,7 @@ const (
 	ErrOptimizationFailed ErrorCode = "OPTIMIZATION_FAILED"
 	ErrResizeFailed      ErrorCode = "RESIZE_FAILED"
 	ErrBackgroundRemoval ErrorCode = "BACKGROUND_REMOVAL_FAILED"
+	ErrPDFConversionFailed ErrorCode = "PDF_CONVERSION_FAILED"
 )
 
 // AppError represents an application error

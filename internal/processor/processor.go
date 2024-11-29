@@ -8,12 +8,14 @@ import (
 	"image/png"
 	"io"
 	"bytes"
+	"math"
 
 	"github.com/chai2010/webp"
 	"github.com/dendianugerah/reubah/internal/processor/background"
 	"github.com/dendianugerah/reubah/internal/processor/resize"
 	"github.com/dendianugerah/reubah/internal/processor/optimize"
 	"github.com/disintegration/imaging"
+	"github.com/jung-kurt/gofpdf"
 	"golang.org/x/image/bmp"
 )
 
@@ -125,6 +127,8 @@ func (pi *ProcessedImage) Write(w io.Writer) error {
 		})
 	case "bmp":
 		return bmp.Encode(w, pi.Image)
+	case "pdf":
+		return convertToPDF(w, pi.Image, pi.Quality)
 	default:
 		return fmt.Errorf("unsupported format for writing: %s", pi.Format)
 	}
@@ -138,6 +142,7 @@ func isValidFormat(format string) bool {
 		"webp": true,
 		"gif":  true,
 		"bmp":  true,
+		"pdf":  true,
 	}
 	return validFormats[format]
 }
@@ -153,4 +158,44 @@ func getQualityLevel(quality int) string {
 	default:
 		return "lossless"
 	}
+}
+
+func convertToPDF(w io.Writer, img image.Image, quality int) error {
+	// Create a new PDF
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+
+	// Convert image to JPEG bytes for embedding
+	var jpegBuf bytes.Buffer
+	if err := jpeg.Encode(&jpegBuf, img, &jpeg.Options{Quality: quality}); err != nil {
+		return fmt.Errorf("failed to encode image for PDF: %w", err)
+	}
+
+	// Get image dimensions
+	bounds := img.Bounds()
+	imgWidth := float64(bounds.Dx())
+	imgHeight := float64(bounds.Dy())
+
+	// Calculate scaling to fit on A4 page (210x297mm)
+	pageWidth := 210.0
+	pageHeight := 297.0
+	margin := 10.0
+	maxWidth := pageWidth - (2 * margin)
+	maxHeight := pageHeight - (2 * margin)
+
+	// Calculate scale to fit within margins while maintaining aspect ratio
+	scale := math.Min(maxWidth/imgWidth, maxHeight/imgHeight)
+	finalWidth := imgWidth * scale
+	finalHeight := imgHeight * scale
+
+	// Center the image on the page
+	x := (pageWidth - finalWidth) / 2
+	y := (pageHeight - finalHeight) / 2
+
+	// Add the image to PDF
+	pdf.RegisterImageOptionsReader("image", gofpdf.ImageOptions{ImageType: "JPEG"}, &jpegBuf)
+	pdf.Image("image", x, y, finalWidth, finalHeight, false, "", 0, "")
+
+	// Write PDF to output
+	return pdf.Output(w)
 }
