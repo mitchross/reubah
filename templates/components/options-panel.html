@@ -140,22 +140,20 @@
                 </label>
 
                 <!-- Remove Background -->
-                <label for="removeBackground" class="block cursor-pointer">
-                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                <label for="removeBackground" class="block cursor-not-allowed opacity-75">
+                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                         <div>
                             <span class="text-sm font-medium text-gray-700 flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 Remove Background
+                                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Coming Soon</span>
                             </span>
                             <p class="text-xs text-gray-500">Automatically remove image background</p>
                         </div>
                         <div class="relative inline-block w-10 mr-2 align-middle select-none">
-                            <input type="checkbox" 
-                                   id="removeBackground" 
-                                   name="removeBackground" 
-                                   class="form-checkbox h-5 w-5 text-indigo-600 transition-colors duration-200 ease-in-out rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                            <input type="checkbox" id="removeBackground" name="removeBackground" disabled class="form-checkbox h-5 w-5 text-gray-400 transition-colors duration-200 ease-in-out rounded border-gray-300 cursor-not-allowed">
                         </div>
                     </div>
                 </label>
