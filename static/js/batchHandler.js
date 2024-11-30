@@ -190,7 +190,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const blob = await response.blob();
             downloadFile(blob, `merged_${Date.now()}.pdf`);
-            alert('PDF created successfully!');
         } catch (error) {
             console.error('Error creating PDF:', error);
             alert('Failed to create PDF: ' + error.message);

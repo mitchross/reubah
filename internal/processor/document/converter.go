@@ -16,6 +16,7 @@ var SupportedFormats = map[string][]string{
 	"docx": {"pdf", "doc", "txt", "odt", "rtf"},
 	"odt":  {"pdf", "doc", "docx", "txt", "rtf"},
 	"rtf":  {"pdf", "doc", "docx", "txt", "odt"},
+	"txt":  {"pdf", "doc", "docx", "odt", "rtf"},
 }
 
 // ConversionOptions contains options for document conversion
@@ -82,7 +83,6 @@ func ConvertDocument(input io.Reader, inputFormat, outputFormat string) ([]byte,
 		return nil, fmt.Errorf("converted file not found in directory")
 	}
 
-	// Read the converted file
 	convertedContent, err := os.ReadFile(outputPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read converted file: %w", err)
@@ -91,7 +91,6 @@ func ConvertDocument(input io.Reader, inputFormat, outputFormat string) ([]byte,
 	return convertedContent, nil
 }
 
-// IsFormatSupported checks if the conversion between formats is supported
 func IsFormatSupported(inputFormat, outputFormat string) bool {
 	supportedOutputs, exists := SupportedFormats[inputFormat]
 	if !exists {

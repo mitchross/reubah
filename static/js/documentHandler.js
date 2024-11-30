@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!file) return;
 
         const ext = file.name.split('.').pop().toLowerCase();
-        const supportedFormats = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
+        const supportedFormats = ['pdf', 'doc', 'docx', 'odt', 'rtf', 'txt'];
         
         if (!supportedFormats.includes(ext)) {
             alert("Please select a supported document format");
@@ -100,7 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const filename = getOutputFilename(state.file.name, elements.outputFormat.value);
             downloadFile(blob, filename);
             
-            alert("Document converted successfully!");
         } catch (error) {
             console.error("Conversion error:", error);
             alert("Failed to convert document: " + error.message);
