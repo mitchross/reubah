@@ -8,7 +8,11 @@ a simple web-based tool for processing images and converting documents with a si
 ```bash
 git clone https://github.com/dendianugerah/reubah.git
 cd reubah
-docker-compose up --build
+docker-compose up -d
+```
+or create a folder for the project and run
+```bash
+docker run -d --name app -p 8081:8081 -v $(pwd)/tmp:/app/tmp -v doc-temp:/tmp -e PORT=8081 --restart unless-stopped ghcr.io/dendianugerah/reubah:latest
 ```
 Access at: `http://localhost:8081`
 
