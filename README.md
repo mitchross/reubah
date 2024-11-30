@@ -23,6 +23,13 @@ go mod download
 go run cmd/server/main.go
 ```
 
+## Images
+
+Here are some images related to the project:
+
+![Home](static/assets/home.png)
+![Document Processing](static/assets/document.png)
+![Merge](static/assets/merge.png)
 
 ## Format Support & Compatibility
 
