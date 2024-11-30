@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  app:
-    image: ghcr.io/dendianugerah/reubah:latest
+  reubah:
+    image: ghcr.io/ma-04/reubah:latest
     ports:
       - "8081:8081"
     volumes:
