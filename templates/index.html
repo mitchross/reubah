@@ -12,7 +12,7 @@
         .fade-enter, .fade-leave-to { opacity: 0; }
     </style>
 </head>
-<body class="bg-gray-50" x-data="{ activeTab: 'basic' }">
+<body class="bg-gray-50" x-data="{ activeTab: 'image', processingMode: 'individual' }">
     <!-- Navigation -->
     {{ template "nav" . }}
 
@@ -24,57 +24,43 @@
 
                 <!-- Tab Content -->
                 <div class="p-6">
-                    <!-- Basic Processing Tab -->
-                    <div x-show="activeTab === 'basic'" 
+                    <!-- Image Processing Tab -->
+                    <div x-show="activeTab === 'image'" 
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 transform scale-95"
                          x-transition:enter-end="opacity-100 transform scale-100"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 transform scale-100"
-                         x-transition:leave-end="opacity-0 transform scale-95"
                          class="space-y-6">
-                <form id="uploadForm" action="/process" method="post" enctype="multipart/form-data" class="space-y-6">
+                        <form id="uploadForm" action="/process" method="post" enctype="multipart/form-data" class="space-y-6">
                             {{ template "quick-actions" . }}
                             {{ template "upload" . }}
                             {{ template "options-panel" . }}
 
                             <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Process Image
-                    </button>
-                </form>
+                                Process Image
+                            </button>
+                        </form>
                     </div>
 
-                    <!-- Other Tabs (Coming Soon) -->
-                    <div x-show="activeTab === 'advanced'" 
+                    <!-- Document Processing Tab -->
+                    <div x-show="activeTab === 'document'" 
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 transform scale-95"
                          x-transition:enter-end="opacity-100 transform scale-100"
                          class="py-12 text-center">
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Advanced tools coming soon</h3>
-                        <p class="mt-1 text-sm text-gray-500">Advanced image processing features will be available soon.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Document processing coming soon</h3>
+                        <p class="mt-1 text-sm text-gray-500">Convert between document formats like PDF, Word, and more.</p>
                     </div>
 
+                    <!-- Batch Processing Tab -->
                     <div x-show="activeTab === 'batch'" 
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 transform scale-95"
                          x-transition:enter-end="opacity-100 transform scale-100"
                          class="space-y-6">
                         {{ template "batch-upload" . }}
-                    </div>
-
-                    <div x-show="activeTab === 'presets'" 
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 transform scale-95"
-                         x-transition:enter-end="opacity-100 transform scale-100"
-                         class="py-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Presets coming soon</h3>
-                        <p class="mt-1 text-sm text-gray-500">Save and reuse your favorite settings.</p>
                     </div>
                 </div>
             </div>

@@ -93,16 +93,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
         state.processing = true;
         elements.batchProcessBtn.disabled = true;
-        elements.batchProgress.classList.remove("hidden");
+        elements.batchProgress.classList.remove('hidden');
 
+        const options = getProcessingOptions();
+
+        if (options.mode === 'merge-pdf') {
+            await processMergePDF(options);
+        } else {
+            await processIndividualFiles(options);
+        }
+
+        state.processing = false;
+        elements.batchProcessBtn.disabled = false;
+        resetBatchUpload();
+    }
+
+    function getProcessingOptions() {
+        const processingMode = document.querySelector('input[name="processing-mode"]:checked').value;
+        
+        if (processingMode === 'merge-pdf') {
+            return {
+                mode: 'merge-pdf',
+                pageSize: document.getElementById('pdfPageSize').value,
+                orientation: document.getElementById('pdfOrientation').value,
+                imagesPerPage: document.getElementById('imagesPerPage').value
+            };
+        }
+        
+        return {
+            mode: 'individual',
+            format: document.getElementById('batchFormatSelect')?.value || 'jpeg',
+            // quality: document.getElementById('batchQualitySelect')?.value || 'medium',
+            width: document.getElementById('batchWidthInput')?.value || '',
+            height: document.getElementById('batchHeightInput')?.value || '',
+            // optimize: document.getElementById('batchOptimize')?.checked || false
+        };
+    }
+
+    async function processIndividualFiles(options) {
         const total = state.files.length;
         let processed = 0;
         let errors = [];
 
         try {
-            const options = getProcessingOptions();
-            const format = options.format; // Get the target format once
-
             for (const file of state.files) {
                 const formData = new FormData();
                 formData.append("image", file);
@@ -130,23 +163,38 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("Batch processing error:", error);
             alert("An error occurred during batch processing");
-        } finally {
-            state.processing = false;
-            elements.batchProcessBtn.disabled = false;
-            resetBatchUpload();
         }
     }
 
-    function getProcessingOptions() {
-        const format = document.getElementById("batchFormatSelect")?.value || "jpeg";
-        return {
-            format: format,
-            quality: document.getElementById("batchQualitySelect")?.value || "medium",
-            width: document.getElementById("batchWidthInput")?.value || "",
-            height: document.getElementById("batchHeightInput")?.value || "",
-            optimize: document.getElementById("batchOptimize")?.checked || false,
-            keepFilenames: document.getElementById("keepFilenames")?.checked || false
-        };
+    async function processMergePDF(options) {
+        const formData = new FormData();
+        state.files.forEach((file, index) => {
+            formData.append(`images`, file);
+        });
+        
+        // Add PDF options
+        formData.append('mode', 'merge-pdf');
+        formData.append('pageSize', options.pageSize);
+        formData.append('orientation', options.orientation);
+        formData.append('imagesPerPage', options.imagesPerPage);
+
+        try {
+            const response = await fetch('/process/merge-pdf', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('PDF creation failed');
+            }
+
+            const blob = await response.blob();
+            downloadFile(blob, `merged_${Date.now()}.pdf`);
+            alert('PDF created successfully!');
+        } catch (error) {
+            console.error('Error creating PDF:', error);
+            alert('Failed to create PDF: ' + error.message);
+        }
     }
 
     async function processFile(formData) {
@@ -169,14 +217,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const originalExt = originalName.split('.').pop();
             
             // Create the new filename
-            let filename;
-            if (formData.get("keepFilenames")) {
-                // Remove the original extension and add the new format
-                const baseName = originalName.replace(`.${originalExt}`, '');
-                filename = `processed_${baseName}.${format}`;
-            } else {
-                filename = `processed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${format}`;
-            }
+            const baseName = originalName.replace(`.${originalExt}`, '');
+            let filename = `processed_${baseName}.${format}`;
             
             // Set the correct content type based on the format
             const contentType = getContentType(format);
