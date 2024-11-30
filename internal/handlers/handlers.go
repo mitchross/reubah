@@ -14,6 +14,7 @@ var templates = template.Must(template.ParseFiles(
 	"templates/components/options-panel.html",
 	"templates/components/progress-result.html",
 	"templates/components/batch-upload.html",
+	"templates/components/document-conversion.html",
 ))
 
 func ShowUploadForm(w http.ResponseWriter, r *http.Request) {

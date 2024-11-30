@@ -83,6 +83,7 @@ func setupRouter() *mux.Router {
 	r.HandleFunc("/", handlers.ShowUploadForm).Methods("GET")
 	r.HandleFunc("/process", handlers.ProcessImage).Methods("POST")
 	r.HandleFunc("/process/merge-pdf", handlers.MergePDF).Methods("POST")
+	r.HandleFunc("/process/document", handlers.ConvertDocument).Methods("POST")
 
 	return r
 }
