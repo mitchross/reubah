@@ -80,3 +80,6 @@ Here are some images related to the project:
 - No file storage - immediate delivery
 - Automatic cleanup
 - Input validation
+
+## License
+This project is licensed under the [MIT License](LICENSE).
