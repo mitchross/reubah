@@ -9,7 +9,9 @@ RUN apk add --no-cache \
     g++ \
     pkgconfig \
     libwebp-dev \
-    musl-dev
+    musl-dev \
+    nodejs \
+    npm
 
 # Copy go.mod and go.sum first to leverage Docker cache
 COPY go.mod go.sum ./
@@ -18,7 +20,13 @@ RUN go mod download
 # Copy the rest of the application
 COPY . .
 
-# Build the application
+# Install npm dependencies and build assets
+WORKDIR /app/templates
+RUN npm install
+RUN npm run build
+
+# Go back to app directory and build the application
+WORKDIR /app
 RUN CGO_ENABLED=1 go build -o reubah ./cmd/server
 
 # Runtime stage

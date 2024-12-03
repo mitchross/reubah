@@ -1,0 +1,4 @@
+templates/node_modules/
+
+static/css/*.css
+static/js/*.js
