@@ -45,13 +45,14 @@ Here are some images related to the project:
 
 ### Image Conversion Matrix
 
-| From ➡️ To ⬇️ | JPG | PNG | WebP | GIF | BMP | PDF |
-|--------------|:---:|:---:|:----:|:---:|:---:|:---:|
-| **JPG**      | -   | ✅  | ✅   | ✅  | ✅  | ✅  |
-| **PNG**      | ✅  | -   | ✅   | ✅  | ✅  | ✅  |
-| **WebP**     | ✅  | ✅  | -    | ✅  | ✅  | ✅  |
-| **GIF**      | ✅  | ✅  | ✅   | -   | ✅  | ✅  |
-| **BMP**      | ✅  | ✅  | ✅   | ✅  | -   | ✅  |
+| From ➡️ To ⬇️ | JPG/JPEG | PNG | WebP | GIF | BMP | HEIC/HEIF | PDF |
+|--------------|:---:|:---:|:----:|:---:|:---:|:---:| :---: |
+| **JPG/JPEG** | -   | ✅  | ✅   | ✅  | ✅ | ❌ | ✅   |
+| **PNG**      | ✅  | -   | ✅   | ✅  | ✅  | ❌ | ✅  |
+| **WebP**     | ✅  | ✅  | -    | ✅  | ✅  | ❌ | ✅  |
+| **GIF**      | ✅  | ✅  | ✅   | -   | ✅  | ❌ | ✅  |
+| **BMP**      | ✅  | ✅  | ✅   | ✅  | -   | ❌| ✅   |
+| **HEIC/HEIF**| ✅  | ✅  | ✅   | ✅  | ✅  | - | ✅   |
 
 ### Document Conversion Matrix
 
@@ -68,11 +69,12 @@ Here are some images related to the project:
 
 | Format | Background Removal (Soon) | Optimization | Batch Processing |
 |--------|:-----------------:|:------------:|:---------------:|
-| JPG    | ❌                | ✅           | ✅              |
+| JPG/JPEG | ❌              | ✅           | ✅              |
 | PNG    | ❌                | ❌           | ✅              |
 | WebP   | ❌                | ❌           | ✅              |
 | GIF    | ❌                | ❌           | ✅              |
 | BMP    | ❌                | ❌           | ✅              |
+| HEIC/HEIF | ❌             | ❌           | ✅              |
 
 ## Notes
 
