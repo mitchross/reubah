@@ -2,6 +2,13 @@
 
 a simple web-based tool for processing images and converting documents with a simple interface
 
+## Features
+
+- [x] File Converter (Keep on adding more formats)
+- [x] Dark Mode
+- [ ] API
+- [ ] Background Removal for Images
+  
 ## Quick Start
 
 ### Using Docker
@@ -12,7 +19,7 @@ docker-compose up -d
 ```
 or create a folder for the project and run
 ```bash
-docker run -d --name reubah -p 8081:8081 -v $(pwd)/tmp:/app/tmp -v doc-temp:/tmp -e PORT=8081 --restart unless-stopped ghcr.io/dendianugerah/reubah:latest
+docker run -d --name reubah -p 8081:8081 -v doc-temp:/tmp -e PORT=8081 --restart unless-stopped ghcr.io/dendianugerah/reubah:latest
 ```
 Access at: `http://localhost:8081`
 
