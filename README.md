@@ -2,6 +2,13 @@
 
 a simple web-based tool for processing images and converting documents with a simple interface
 
+## Features
+
+- [x] File Converter (Keep on adding more formats)
+- [x] Dark Mode
+- [ ] API
+- [ ] Background Removal for Images
+  
 ## Quick Start
 
 ### Using Docker
@@ -12,7 +19,7 @@ docker-compose up -d
 ```
 or create a folder for the project and run
 ```bash
-docker run -d --name reubah -p 8081:8081 -v $(pwd)/tmp:/app/tmp -v doc-temp:/tmp -e PORT=8081 --restart unless-stopped ghcr.io/dendianugerah/reubah:latest
+docker run -d --name reubah -p 8081:8081 -v doc-temp:/tmp -e PORT=8081 --restart unless-stopped ghcr.io/dendianugerah/reubah:latest
 ```
 Access at: `http://localhost:8081`
 
@@ -45,13 +52,14 @@ Here are some images related to the project:
 
 ### Image Conversion Matrix
 
-| From ➡️ To ⬇️ | JPG | PNG | WebP | GIF | BMP | PDF |
-|--------------|:---:|:---:|:----:|:---:|:---:|:---:|
-| **JPG**      | -   | ✅  | ✅   | ✅  | ✅  | ✅  |
-| **PNG**      | ✅  | -   | ✅   | ✅  | ✅  | ✅  |
-| **WebP**     | ✅  | ✅  | -    | ✅  | ✅  | ✅  |
-| **GIF**      | ✅  | ✅  | ✅   | -   | ✅  | ✅  |
-| **BMP**      | ✅  | ✅  | ✅   | ✅  | -   | ✅  |
+| From ➡️ To ⬇️ | JPG/JPEG | PNG | WebP | GIF | BMP | HEIC/HEIF | PDF |
+|--------------|:---:|:---:|:----:|:---:|:---:|:---:| :---: |
+| **JPG/JPEG** | -   | ✅  | ✅   | ✅  | ✅ | ❌ | ✅   |
+| **PNG**      | ✅  | -   | ✅   | ✅  | ✅  | ❌ | ✅  |
+| **WebP**     | ✅  | ✅  | -    | ✅  | ✅  | ❌ | ✅  |
+| **GIF**      | ✅  | ✅  | ✅   | -   | ✅  | ❌ | ✅  |
+| **BMP**      | ✅  | ✅  | ✅   | ✅  | -   | ❌| ✅   |
+| **HEIC/HEIF**| ✅  | ✅  | ✅   | ✅  | ✅  | - | ✅   |
 
 ### Document Conversion Matrix
 
@@ -68,11 +76,12 @@ Here are some images related to the project:
 
 | Format | Background Removal (Soon) | Optimization | Batch Processing |
 |--------|:-----------------:|:------------:|:---------------:|
-| JPG    | ❌                | ✅           | ✅              |
+| JPG/JPEG | ❌              | ✅           | ✅              |
 | PNG    | ❌                | ❌           | ✅              |
 | WebP   | ❌                | ❌           | ✅              |
 | GIF    | ❌                | ❌           | ✅              |
 | BMP    | ❌                | ❌           | ✅              |
+| HEIC/HEIF | ❌             | ❌           | ✅              |
 
 ## Notes
 

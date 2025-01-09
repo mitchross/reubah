@@ -20,13 +20,10 @@ RUN apk add --no-cache \
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the rest of the application
-COPY . .
-
-# Install npm dependencies and build assets
+# Copy application code and build
+COPY . ./
 WORKDIR /app/templates
-RUN npm install
-RUN npm run build
+RUN npm install && npm run build
 
 # Go back to app directory and build the application
 WORKDIR /app
@@ -51,16 +48,16 @@ RUN apk add --no-cache \
 # Create directories for LibreOffice
 RUN mkdir -p /tmp/.cache /tmp/.config /tmp/.local
 
-# Copy the binary from builder
+# Copy binary and static files
 COPY --from=builder /app/reubah /app/reubah
-
-# Copy templates and static directories
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/static ./static
 
-# Create a non-root user
-RUN adduser -D appuser && \
-    chown -R appuser:appuser /app /tmp/.cache /tmp/.config /tmp/.local
+# Create non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -D appuser && \
+    chown -R appuser:appgroup /app /tmp/.cache /tmp/.config /tmp/.local
+
 USER appuser
 
 # Set environment variables for LibreOffice
