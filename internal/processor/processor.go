@@ -199,69 +199,43 @@ type ProcessedImage struct {
 func (pi *ProcessedImage) Write(w io.Writer) error {
 	switch pi.Format {
 	case "jpeg", "jpg":
-		return jpeg.Encode(w, pi.Image, &jpeg.Options{Quality: pi.Quality})
-	case "png":
-		fmt.Printf("Writing PNG, input image type: %T\n", pi.Image)
-		// For ICO input, ensure we're using NRGBA format to preserve transparency
-		var nrgba *image.NRGBA
-		if img, ok := pi.Image.(*image.NRGBA); ok {
-			fmt.Println("Image is already NRGBA")
-			nrgba = img
-		} else {
-			fmt.Println("Converting to NRGBA")
-			bounds := pi.Image.Bounds()
-			nrgba = image.NewNRGBA(bounds)
-			for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-				for x := bounds.Min.X; x < bounds.Max.X; x++ {
-					r, g, b, a := pi.Image.At(x, y).RGBA()
-					if x == 0 && y == 0 {
-						fmt.Printf("Sample pixel at (0,0): R=%d, G=%d, B=%d, A=%d\n", r>>8, g>>8, b>>8, a>>8)
-					}
-					nrgba.Set(x, y, color.NRGBA{
-						R: uint8(r >> 8),
-						G: uint8(g >> 8),
-						B: uint8(b >> 8),
-						A: uint8(a >> 8),
-					})
+		// Create a new white background image
+		bounds := pi.Image.Bounds()
+		bgImage := image.NewRGBA(bounds)
+
+		// Fill with white
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				bgImage.Set(x, y, color.White)
+			}
+		}
+
+		// Draw the original image over the white background
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				srcColor := pi.Image.At(x, y)
+				if _, _, _, a := srcColor.RGBA(); a > 0 {
+					bgImage.Set(x, y, srcColor)
 				}
 			}
 		}
-		fmt.Println("Encoding PNG...")
-		return png.Encode(w, nrgba)
+
+		return jpeg.Encode(w, bgImage, &jpeg.Options{Quality: pi.Quality})
+	case "png":
+		return png.Encode(w, pi.Image)
+	case "gif":
+		return gif.Encode(w, pi.Image, &gif.Options{
+			NumColors: 256,
+		})
+	case "bmp":
+		return bmp.Encode(w, pi.Image)
 	case "webp":
 		return webp.Encode(w, pi.Image, &webp.Options{
 			Lossless: pi.Quality == 100,
 			Quality:  float32(pi.Quality),
 		})
-	case "gif":
-		return gif.Encode(w, pi.Image, &gif.Options{
-			NumColors: (pi.Quality * 256) / 100,
-		})
-	case "bmp":
-		return bmp.Encode(w, pi.Image)
-	case "heic", "heif":
-		return encodeHEIC(w, pi.Image, pi.Quality)
-	case "pdf":
-		return convertToPDF(w, pi.Image, pi.Quality)
-	case "ico":
-		// For ICO files, we'll encode as PNG since ICO is primarily used for input
-		// Create a new NRGBA image to properly handle transparency
-		bounds := pi.Image.Bounds()
-		nrgba := image.NewNRGBA(bounds)
-		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				r, g, b, a := pi.Image.At(x, y).RGBA()
-				nrgba.Set(x, y, color.NRGBA{
-					R: uint8(r >> 8),
-					G: uint8(g >> 8),
-					B: uint8(b >> 8),
-					A: uint8(a >> 8),
-				})
-			}
-		}
-		return png.Encode(w, nrgba)
 	default:
-		return fmt.Errorf("unsupported format for writing: %s", pi.Format)
+		return fmt.Errorf("unsupported format: %s", pi.Format)
 	}
 }
 
