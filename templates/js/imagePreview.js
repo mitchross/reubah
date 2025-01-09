@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
            file.type === 'image/heic' || file.type === 'image/heif';
   }
 
+  function isIcoFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ext === 'ico' || file.type === 'image/x-icon';
+  }
+
   function initializeImagePreview() {
     if (!elements.imageInput || !elements.uploadArea) {
       console.error("Required preview elements not found");
@@ -68,17 +73,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleFileSelect(file) {
     const isImage = file.type.startsWith("image/");
-    const isHeic = file.name.toLowerCase().endsWith('.heic') || 
-                  file.name.toLowerCase().endsWith('.heif');
+    const isHeic = isHeicFile(file);
+    const isIco = isIcoFile(file);
     
-    if (!isImage && !isHeic) {
+    if (!isImage && !isHeic && !isIco) {
         alert("Please select an image file");
         return;
     }
 
     updateFileStatus(file);
     previewImage(file);
-}
+  }
 
   function updateFileStatus(file) {
     if (!elements.fileStatus) return;
@@ -112,6 +117,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     elements.formatSelect.value = "jpeg";
                 }
             }
+        } else if (isIcoFile(file)) {
+            img.src = e.target.result;
+            img.alt = 'ICO preview';
+            img.style.backgroundColor = '#ffffff'; // Add white background for transparency
+            elements.uploadArea.classList.add("border-green-500");
+            if (elements.uploadText) {
+                elements.uploadText.innerHTML = '<span class="text-green-500">ICO file ready for processing</span>';
+            }
+            
+            // Set PNG as default output for ICO
+            if (elements.formatSelect && elements.formatSelect.value === "ico") {
+                elements.formatSelect.value = "png";
+            }
+            img.onload = () => updateImageInfo(img);
         } else {
             img.src = e.target.result;
             img.alt = 'Image preview';
